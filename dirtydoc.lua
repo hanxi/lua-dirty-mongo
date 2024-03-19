@@ -53,7 +53,7 @@ end
 local function doc_change_value(doc, k, v)
 	if doc._schema ~= nil then
 		if not doc._schema:_check_kv(k, v) then
-			print("err doc_change_value", getmetatable(doc._schema), k, v, debug.traceback())
+			print("err doc_change_value. key:", k, ", schema:", getmetatable(doc._schema))
 		end
 	end
 	if v ~= doc[k] then
@@ -68,7 +68,13 @@ local function doc_change_recursively(doc, k, v)
 	local lv = doc._stage[k]
 	if getmetatable(lv) ~= tracedoc_type then
 		lv = doc._changed_values[k]
-		local schema = doc._schema and doc._schema[k]
+		local schema
+		if doc._schema then
+			schema = doc._schema[k]
+			if not doc._schema:_check_kv(k, v._schema) then
+				print("err doc_change_recursively:", k, "schema:", getmetatable(v._schema))
+			end
+		end
 		if getmetatable(lv) ~= tracedoc_type then
 			-- last version is not a table, new a empty one
 			lv = dirtydoc.new(schema, nil)
@@ -77,9 +83,6 @@ local function doc_change_recursively(doc, k, v)
 			lv = dirtydoc.new(schema, lv)
 		end
 
-		if schema ~= nil and (not doc._schema:_check_kv(k, v._schema)) then
-			print("err doc_change_recursively", k, v, getmetatable(v._schema), debug.traceback())
-		end
 		lv._parent = doc
 		doc._stage[k] = lv
 	end
@@ -157,6 +160,19 @@ dirtydoc.remove = doc_remove
 
 function dirtydoc.new(schema, init)
 	local doc_stage = {}
+	if dirtydoc.need_schema and schema == nil then
+		print("err need_schema.", debug.traceback())
+	end
+	if schema then
+		setmetatable(doc_stage, {
+			__index = function(t,k)
+				if not schema:_check_k(k) then
+					print("err __index. key:", k)
+				end
+				return rawget(t, k)
+			end,
+		})
+	end
 	local doc = {
 		_dirty = false,
 		_all_dirty = false,

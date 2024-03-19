@@ -8,33 +8,46 @@ local str = setmetatable({}, {
 	__metatable = str_type,
 })
 
+local function _check_k(self, k)
+	local schema = self[k]
+	if not schema then
+		print("not exist key:", k, debug.traceback())
+		return false
+	end
+	return true
+end
+
 local function _check_kv(self, k, v)
 	if v == nil then
 		return true
 	end
+
 	local schema = self[k]
 	if not schema then
-		print("check_kv", k, v)
+		print("not exist key:", k, debug.traceback())
 		return false
 	end
+
 	local tp = type(v)
-	print("check_kv", tp)
+	local real_tp
 	if tp == "number" then
-		print("check_kv", getmetatable(schema), number_type)
-		return getmetatable(schema) == number_type
+		real_tp = number_type
 	elseif tp == "string" then
-		print("check_kv", getmetatable(schema), str_type)
-		return getmetatable(schema) == str_type
+		real_tp = str_type
 	elseif tp == "table" then
-		print("check_kv", getmetatable(schema), getmetatable(v))
-		return getmetatable(schema) == getmetatable(v)
+		real_tp = getmetatable(v)
 	end
-	return false
+	if getmetatable(schema) ~= real_tp then
+		print("not equal type. key:", k, ", need_tp:", getmetatable(schema), ", real_tp:", real_tp, debug.traceback())
+		return false
+	end
+	return true
 end
 
 local item_type = setmetatable({}, { __tostring = function() return "schema_item" end })
 local item = {
 	item_id = number,
+	_check_k = _check_k,
 	_check_kv = _check_kv,
 }
 setmetatable(item, {
@@ -46,6 +59,7 @@ local user = {
 	user_id = number,
 	item = item,
 	name = str,
+	_check_k = _check_k,
 	_check_kv = _check_kv,
 }
 setmetatable(user, {
