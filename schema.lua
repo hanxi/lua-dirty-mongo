@@ -8,33 +8,11 @@ local str = setmetatable({}, {
 	__metatable = str_type,
 })
 
-local funcs = {}
-
-local item_type = setmetatable({}, { __tostring = function() return "schema_item" end })
-local item = {
-	item_id = number,
-}
-setmetatable(item, {
-	__index = funcs,
-	__metatable = item_type,
-})
-
-local user_type = setmetatable({}, { __tostring = function() return "schema_user" end })
-local user = {
-	user_id = number,
-	item = item,
-	name = str,
-}
-setmetatable(user, {
-	__index = funcs,
-	__metatable = user_type,
-})
-
-function funcs:_check_kv(k, v)
+local function _check_kv(self, k, v)
 	if v == nil then
 		return true
 	end
-	local schema = rawget(self, k)
+	local schema = self[k]
 	if not schema then
 		print("check_kv", k, v)
 		return false
@@ -53,6 +31,26 @@ function funcs:_check_kv(k, v)
 	end
 	return false
 end
+
+local item_type = setmetatable({}, { __tostring = function() return "schema_item" end })
+local item = {
+	item_id = number,
+	_check_kv = _check_kv,
+}
+setmetatable(item, {
+	__metatable = item_type,
+})
+
+local user_type = setmetatable({}, { __tostring = function() return "schema_user" end })
+local user = {
+	user_id = number,
+	item = item,
+	name = str,
+	_check_kv = _check_kv,
+}
+setmetatable(user, {
+	__metatable = user_type,
+})
 
 return {
 	number = number,

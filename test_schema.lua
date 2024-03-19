@@ -35,12 +35,12 @@ end
 local dirtydoc = require "dirtydoc"
 local schema = require "schema"
 
-local obj = dirtydoc.new(nil, schema.user)
+local obj = dirtydoc.new(schema.user)
 
 obj.user_id = 10086
-obj.item = dirtydoc.new(nil, schema.item)
+obj.item = dirtydoc.new(schema.item)
 obj.item.item_id = 1001
-obj.item = dirtydoc.new(nil, schema.item)
+obj.item = dirtydoc.new(schema.item)
 obj.name = "hanxi"
 obj.item.item_id = "hanxi"
 

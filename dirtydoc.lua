@@ -71,10 +71,10 @@ local function doc_change_recursively(doc, k, v)
 		local schema = doc._schema and doc._schema[k]
 		if getmetatable(lv) ~= tracedoc_type then
 			-- last version is not a table, new a empty one
-			lv = dirtydoc.new(nil, schema)
+			lv = dirtydoc.new(schema, nil)
 		else
 			-- this version is clear first (not a dirtydoc), deepcopy lastversion one
-			lv = dirtydoc.new(lv, schema)
+			lv = dirtydoc.new(schema, lv)
 		end
 
 		if schema ~= nil and (not doc._schema:_check_kv(k, v._schema)) then
@@ -155,7 +155,7 @@ dirtydoc.concat = doc_concat
 dirtydoc.insert = doc_insert
 dirtydoc.remove = doc_remove
 
-function dirtydoc.new(init, schema)
+function dirtydoc.new(schema, init)
 	local doc_stage = {}
 	local doc = {
 		_dirty = false,
