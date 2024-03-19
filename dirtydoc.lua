@@ -50,8 +50,13 @@ local function mark_dirty(doc)
 	end
 end
 
-local function doc_change_value(doc, k, v, force)
-	if v ~= doc[k] or force then
+local function doc_change_value(doc, k, v)
+	if doc._schema ~= nil then
+		if not doc._schema:_check_kv(k, v) then
+			print("err doc_change_value", getmetatable(doc._schema), k, v, debug.traceback())
+		end
+	end
+	if v ~= doc[k] then
 		doc._changed_keys[k] = true -- mark changed (even nil)
 		doc._changed_values[k] = doc._stage[k] -- lastversion value
 		doc._stage[k] = v -- current value
@@ -63,12 +68,17 @@ local function doc_change_recursively(doc, k, v)
 	local lv = doc._stage[k]
 	if getmetatable(lv) ~= tracedoc_type then
 		lv = doc._changed_values[k]
+		local schema = doc._schema and doc._schema[k]
 		if getmetatable(lv) ~= tracedoc_type then
 			-- last version is not a table, new a empty one
-			lv = dirtydoc.new()
+			lv = dirtydoc.new(nil, schema)
 		else
 			-- this version is clear first (not a dirtydoc), deepcopy lastversion one
-			lv = dirtydoc.new(lv)
+			lv = dirtydoc.new(lv, schema)
+		end
+
+		if schema ~= nil and (not doc._schema:_check_kv(k, v._schema)) then
+			print("err doc_change_recursively", k, v, getmetatable(v._schema), debug.traceback())
 		end
 		lv._parent = doc
 		doc._stage[k] = lv
@@ -145,7 +155,7 @@ dirtydoc.concat = doc_concat
 dirtydoc.insert = doc_insert
 dirtydoc.remove = doc_remove
 
-function dirtydoc.new(init)
+function dirtydoc.new(init, schema)
 	local doc_stage = {}
 	local doc = {
 		_dirty = false,
@@ -154,6 +164,7 @@ function dirtydoc.new(init)
 		_changed_keys = {},
 		_changed_values = {},
 		_stage = doc_stage,
+		_schema = schema,
 	}
 	setmetatable(doc, {
 		__index = doc_stage, 
