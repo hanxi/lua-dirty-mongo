@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+message item {
+    int32 item_id = 1;
+    map<int32,int32> props = 2;
+    repeated int32 list = 3;
+    map<string,string> ss= 4;
+}
+
+message user {
+	int64 user_id = 1;
+	string name = 2;
+	item item = 3;
+    repeated item items = 4;
+    map<int32,item> mitems = 5;
+}
+
