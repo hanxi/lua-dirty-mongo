@@ -1,0 +1,3 @@
+[submodule "tools/lua-protobuf"]
+	path = tools/lua-protobuf
+	url = https://github.com/starwing/lua-protobuf.git
