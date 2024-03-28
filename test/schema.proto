@@ -13,5 +13,6 @@ message item {
     map<int32,int32> props = 2;
     repeated int32 list = 3;
     map<string,string> ss= 4;
+    bool can = 5;
 }
 

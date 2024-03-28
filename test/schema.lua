@@ -77,6 +77,7 @@ item.item_id = number
 item.props = map_number_number
 item.list = arr_number
 item.ss = map_string_string
+item.can = boolean
 item._check_k = schema_base.check_k
 item._check_kv = schema_base.check_kv
 setmetatable(item, {
