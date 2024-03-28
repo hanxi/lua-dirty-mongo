@@ -16,6 +16,11 @@ obj.item.item_id = 1001
 obj.item = dirtydoc.new(schema.item)
 obj.name = "hanxi"
 obj.item.item_id = "hanxi"
+obj.items = dirtydoc.new(schema.arr_item)
+
+local item = dirtydoc.new(schema.item)
+item.item_id = 100
+obj.items[1] = item
 
 obj.item.item_id = 10010
 print("test __index", obj.item.item_id)

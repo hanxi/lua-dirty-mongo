@@ -66,59 +66,64 @@ function interp(s, tab)
     end))
 end
 
-local head = [[
+local head = sformat(
+    [[
+-- Auto generate from %s
+
 local schema_base = require("schema_base")
 local number = schema_base.number
 local string = schema_base.string
 local boolean = schema_base.boolean
 
-]]
+]],
+    filename
+)
 
 local defines = {}
 
 local tmpl_message = [[
-${name}_type = setmetatable({}, {
+setmetatable(${name}_type, {
     __tostring = function()
         return "schema_${name}"
     end,
 })
-${name} = {
 ${fields_str}
-    _check_k = schema_base.check_k,
-    _check_kv = schema_base.check_kv,
-}
+${name}._check_k = schema_base.check_k
+${name}._check_kv = schema_base.check_kv
 setmetatable(${name}, {
     __metatable = ${name}_type,
 })
 ]]
 
 local tmpl_map = [[
-map_${kv_type}_type = setmetatable({}, {
+setmetatable(map_${kv_type}_type, {
     __tostring = function()
         return "schema_map_${kv_type}"
     end,
 })
-map_${kv_type} = {
-    _check_k = schema_base.check_k_func(${key_type}),
-    _check_kv = schema_base.check_kv_func(${key_type}, ${value_type}),
-}
+map_${kv_type}._check_k = schema_base.check_k_func(${key_type})
+map_${kv_type}._check_kv = schema_base.check_kv_func(${key_type}, ${value_type})
 setmetatable(map_${kv_type}, {
     __metatable = map_${kv_type}_type,
+    __index = function(t, k)
+        return ${value_type}
+    end,
 })
 ]]
 
 local tmpl_arr = [[
-arr_${value_type}_type = setmetatable({}, {
+setmetatable(arr_${value_type}_type, {
     __tostring = function()
         return "schema_arr_${value_type}"
     end,
 })
-arr_${value_type} = {
-    _check_k = schema_base.check_k_func(number),
-    _check_kv = schema_base.check_kv_func(number, ${value_type}),
-}
+arr_${value_type}._check_k = schema_base.check_k_func(number)
+arr_${value_type}._check_kv = schema_base.check_kv_func(number, ${value_type})
 setmetatable(arr_${value_type}, {
     __metatable = arr_${value_type}_type,
+    __index = function(t, k)
+        return ${value_type}
+    end,
 })
 ]]
 
@@ -152,7 +157,7 @@ for name, basename, type in pb.types() do
             if not maps[kv_type] then
                 maps[kv_type] = true
                 tinsert(bodys, interp(tmpl_map, { key_type = key_type, value_type = value_type, kv_type = kv_type }))
-                tinsert(defines, sformat("local map_%s, map_%s_type", kv_type, kv_type))
+                tinsert(defines, sformat("local map_%s, map_%s_type = {}, {}", kv_type, kv_type))
                 tinsert(returns, sformat("    map_%s = map_%s,", kv_type, kv_type))
             end
         end
@@ -170,7 +175,7 @@ for name, basename, type in pb.types() do
                 if flag ~= "optional" and not arrs[field_type] and not map2name[type] then
                     arrs[field_type] = true
                     tinsert(bodys, interp(tmpl_arr, { value_type = field_type }))
-                    tinsert(defines, sformat("local arr_%s, arr_%s_type", field_type, field_type))
+                    tinsert(defines, sformat("local arr_%s, arr_%s_type = {}, {}", field_type, field_type))
                     tinsert(returns, sformat("    arr_%s = arr_%s,", field_type, field_type))
                 end
             end
@@ -182,7 +187,7 @@ for name, basename, type in pb.types() do
     if name:match(".google.*") == nil then
         print("message", name, basename, type)
         if type == "message" then
-            tinsert(defines, sformat("local %s, %s_type", basename, basename))
+            tinsert(defines, sformat("local %s, %s_type = {}, {}", basename, basename))
             tinsert(returns, sformat("    %s = %s,", basename, basename))
 
             local fields = {}
@@ -199,7 +204,7 @@ for name, basename, type in pb.types() do
                         field_type = sformat("arr_%s", type2name[tp_name] or tp_name)
                     end
                 end
-                tinsert(fields, sformat("    %s = %s,", field_name, field_type))
+                tinsert(fields, sformat("%s.%s = %s", basename, field_name, field_type))
             end
             local fields_str = tconcat(fields, "\n")
             tinsert(bodys, interp(tmpl_message, { name = basename, fields_str = fields_str }))
