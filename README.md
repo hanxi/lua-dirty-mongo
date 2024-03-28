@@ -93,6 +93,9 @@ dirty:  table: 0x55f5221bf650   result: {
 
 生成的差异修改结果可以直接用于 MongoDB 的 update 接口。
 
+## TODO
+- [ ] 在 [hanxi/skynet-demo](https://github.com/hanxi/skynet-demo) 中加入使用示例
+
 ## 参考
 
 - [适合游戏服务器开发的ORM](https://blog.hanxi.cc/p/93/)
