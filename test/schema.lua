@@ -1,8 +1,9 @@
 local schema_base = require "schema_base"
 local number = schema_base.number
-local str = schema_base.str
+local string = schema_base.string
 
-local item_type
+local item, item_type
+local user_type
 local map_number_number_type
 local map_str_str_type
 local map_number_item_type
@@ -12,7 +13,6 @@ local item
 local map_number_number
 local map_str_str
 local map_number_item
-local user_type
 local user
 local arr_item
 

@@ -5,9 +5,14 @@ schema_base.number = setmetatable({}, {
 	__metatable = number_type,
 })
 
-local str_type = setmetatable({}, { __tostring = function() return "schema_str" end })
-schema_base.str = setmetatable({}, {
-	__metatable = str_type,
+local string_type = setmetatable({}, { __tostring = function() return "schema_string" end })
+schema_base.string = setmetatable({}, {
+	__metatable = string_type,
+})
+
+local boolean_type = setmetatable({}, { __tostring = function() return "schema_boolean" end })
+schema_base.boolean = setmetatable({}, {
+	__metatable = boolean_type,
 })
 
 local function _check_k_tp(k, need_tp)
@@ -16,7 +21,7 @@ local function _check_k_tp(k, need_tp)
 	if tp == "number" then
 		real_tp = number_type
 	elseif tp == "string" then
-		real_tp = str_type
+		real_tp = string_type
 	else
 		return false
 	end
@@ -33,7 +38,9 @@ local function _check_v_tp(v, need_tp)
 	if tp == "number" then
 		real_tp = number_type
 	elseif tp == "string" then
-		real_tp = str_type
+		real_tp = string_type
+	elseif tp == "boolean" then
+		real_tp = boolean_type
 	elseif tp == "table" then
 		real_tp = getmetatable(v)
 	end

@@ -55,15 +55,106 @@ print(content)  -- 输出文件内容，或进行进一步处理
 
 local pb = require "pb"
 local protoc = require "protoc"
+local tinsert = table.insert
+local tconcat = table.concat
+local sformat = string.format
 
 -- 直接载入schema (这么写只是方便, 生产环境推荐使用 protoc.new() 接口)
 assert(protoc:load(content))
 
+local head = [[
+local schema_base = require "schema_base"
+local number = schema_base.number
+local string = schema_base.string
+local boolean = schema_base.boolean
+
+]]
+
+local defines = {}
+
+local tmpl_message = [[
+%s_type = setmetatable({}, { __tostring = function() return "schema_%s" end })
+item = {
+%s
+    _check_k = schema_base.check_k,
+    _check_kv = schema_base.check_kv,
+}
+setmetatable(%s, {
+    __metatable = %s_type,
+})
+]]
+
+local tmpl_map = [[
+map_number_item_type = setmetatable({}, { __tostring = function() return "schema_map_number_item" end })
+map_number_item = {
+	_check_k = schema_base.check_k_func(number),
+	_check_kv = schema_base.check_kv_func(number, item),
+}
+setmetatable(map_number_item, {
+	__metatable = map_number_item_type,
+})
+]]
+
+local bodys = {}
+
+local type2name = {
+	int32 = "number",
+	uint32 = "number",
+	int64 = "number",
+	uint64 = "number",
+	double = "number",
+	float = "number",
+	bool = "boolean",
+	string = "string",
+}
+
+local map2name = {}
+for name, basename, type in pb.types() do
+	if name:match(".google.*") == nil then
+		if type == "map" then
+			local _, _, key_type = pb.field(name, "key")
+			key_type = type2name[key_type] or key_type
+			local _, _, value_type = pb.field(name, "key")
+			value_type = type2name[value_type] or value_type
+			map2name[name] = sformat("%s_%s", key_type, value_type)
+
+			tinsert(bodys, )
+		end
+	end
+end
+
 for name, basename, type in pb.types() do
 	if name:match(".google.*") == nil then
 		print(name, basename, type)
+		if type == "message" then
+			tinsert(defines, sformat("local %s, %s_type", basename, basename))
+
+			local fields = {}
+			for field_name, _, type, _, flag  in pb.fields(name)  do
+				print("fields", field_name, type, flag)
+				local tp_name = type:gsub("^%.", "")
+				local field_type
+				if flag == "optional" then
+					field_type = type2name[tp_name] or tp_name
+				else
+					if map2name[type] then
+						field_type = sformat("map_%s", map2name[type])
+					else
+						field_type = sformat("arr_%s", type2name[tp_name] or tp_name)
+					end
+				end
+				tinsert(fields, sformat("    %s = %s,", field_name, field_type))
+			end
+			local fields_str = tconcat(fields, "\n")
+			tinsert(bodys, sformat(tmpl_message, basename, basename, fields_str, basename, basename))
+		end
+
 		for field_name, _, type, _, flag  in pb.fields(name)  do
 			print("fields", field_name, type, flag)
 		end
 	end
 end
+
+local ret = head .. tconcat(defines, "\n") .. "\n\n" .. tconcat(bodys, "\n")
+print("=============")
+print(ret)
