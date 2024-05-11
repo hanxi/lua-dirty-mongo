@@ -1,3 +1,5 @@
+package.cpath = package.cpath .. ";" .. "../tools/?.so;" .. "../tools/?.dll"
+package.path = package.path .. ";" .. "../tools/lua-protobuf/?.lua"
 local pb = require("pb")
 local protoc = require("protoc")
 

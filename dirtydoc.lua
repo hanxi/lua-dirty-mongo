@@ -58,7 +58,7 @@ local function mark_dirty(doc)
 end
 
 local function doc_change_value(doc, k, v)
-    if doc._schema ~= nil then
+    if doc._schema ~= nil and v ~= nil then
         if not doc._schema:_check_kv(k, v) then
             print("err doc_change_value. key:", k, ", schema:", getmetatable(doc._schema))
         end
@@ -112,11 +112,39 @@ local function doc_change_recursively(doc, k, v)
     lv._all_dirty = true
 end
 
+local function doc_set_const(doc)
+	if doc._const then
+		return
+	end
+
+	doc._const = true
+	for k,v in pairs(doc) do
+		if type(v) == "table" then
+			doc_set_const(v)
+		end
+	end
+end
+
 local function doc_change(doc, k, v)
+	if doc._const then
+		print("err const can't change. k:", k, ", v:", v, debug.traceback())
+	end
+
     local recursively = false
     if type(v) == "table" then
         local vt = getmetatable(v)
         recursively = vt == nil or vt == tracedoc_type
+
+        if doc._schema and v ~= nil then
+            if not doc._schema:_check_kv(k, v._schema) then
+                print("err doc_change:", k, "schema:", getmetatable(v._schema))
+			end
+		end
+
+		if doc._schema and vt ~= nil then
+			-- deep set v to const
+			doc_set_const(v)
+		end
     end
 
     if recursively then
@@ -188,6 +216,7 @@ function dirtydoc.new(schema, init)
         _changed_values = {},
         _stage = doc_stage,
         _schema = schema,
+		_const = false,
     }
     setmetatable(doc, {
         __index = doc_stage,
@@ -233,7 +262,7 @@ local function _commit_mongo(doc, result, prefix)
             if result then
                 local key = prefix and prefix .. k or tostring(k)
                 if v == nil then
-                    result["$unset"][key] = NULL
+                    result["$unset"][key] = ""
                 else
                     result["$set"][key] = v
                 end
@@ -270,7 +299,7 @@ local function _commit_mongo(doc, result, prefix)
             end
         end
     end
-    return result or dirty
+    return dirty
 end
 
 function dirtydoc.commit_mongo(doc)

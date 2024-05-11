@@ -92,10 +92,6 @@ function schema_base.check_k(self, k)
 end
 
 function schema_base.check_kv(self, k, v)
-    if v == nil then
-        return true
-    end
-
     local schema = self[k]
     if not schema then
         print("not exist key:", k, debug.traceback())
