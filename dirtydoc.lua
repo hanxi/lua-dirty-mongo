@@ -310,6 +310,12 @@ function dirtydoc.commit_mongo(doc)
     }
     local dirty = _commit_mongo(doc, result)
     result._n = nil
+	if next(result["$set"]) == nil then
+		result["$set"] = nil
+	end
+	if next(result["$unset"]) == nil then
+		result["$unset"] = nil
+	end
     return dirty, result
 end
 
