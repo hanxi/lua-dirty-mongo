@@ -42,7 +42,7 @@ print("dirty:", dirty, "result:", dump_table(result))
 -- 赋值不是 scheme 会报错
 print("=== check error set no schema value")
 obj.item = {
-	item_id = 300,
+    item_id = 300,
 }
 local dirty, result = dirtydoc.commit_mongo(obj)
 print("dirty:", dirty, "result:", dump_table(result))
@@ -58,4 +58,3 @@ print("=== set value not in schema")
 obj.a = "a"
 obj.b = "b"
 obj.arr = { 1, 2, 3 }
-

@@ -46,4 +46,3 @@ print("=== 不能再修改已赋值给 obj 之后的 item")
 item.item_id = 1004
 local dirty, result = dirtydoc.commit_mongo(obj)
 print("dirty:", dirty, "result:", dump_table(result))
-

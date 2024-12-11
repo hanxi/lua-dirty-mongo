@@ -40,7 +40,9 @@ local function dump_table(t, indent, visited, path)
 
     -- 如果路径为root，说明递归回到了最顶层，清除visited记录
     if path == "root" then
-        for k in pairs(visited) do visited[k] = nil end
+        for k in pairs(visited) do
+            visited[k] = nil
+        end
     end
     return output
 end

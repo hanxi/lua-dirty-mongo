@@ -84,10 +84,10 @@ local function doc_change_recursively(doc, k, v)
         end
         if getmetatable(lv) ~= tracedoc_type then
             -- last version is not a table, new a empty one
-            lv = dirtydoc.new(schema, nil)
+            lv = _new_doc(schema, nil)
         else
             -- this version is clear first (not a dirtydoc), deepcopy lastversion one
-            lv = dirtydoc.new(schema, lv)
+            lv = _new_doc(schema, lv)
         end
 
         lv._parent = doc
@@ -118,7 +118,7 @@ local function doc_set_const(doc)
     end
 
     doc._const = true
-    for k,v in pairs(doc) do
+    for k, v in pairs(doc) do
         if type(v) == "table" then
             doc_set_const(v)
         end
@@ -193,7 +193,7 @@ dirtydoc.concat = doc_concat
 dirtydoc.insert = doc_insert
 dirtydoc.remove = doc_remove
 
-function dirtydoc.new(schema, init)
+local function _new_doc(schema, init)
     local doc_stage = {}
     if dirtydoc.need_schema and schema == nil then
         print("err need_schema.", debug.traceback())
@@ -230,12 +230,18 @@ function dirtydoc.new(schema, init)
         for k, v in pairs(init) do
             -- deepcopy v
             if getmetatable(v) == tracedoc_type then
-                doc[k] = dirtydoc.new(v)
+                doc[k] = _new_doc(v)
             else
                 doc[k] = v
             end
         end
     end
+    return doc
+end
+
+function dirtydoc.new(schema, init)
+    local doc = _new_doc(schema, init)
+    dirtydoc.commit_mongo(doc)
     return doc
 end
 
@@ -261,7 +267,7 @@ local function _commit_mongo(doc, result, prefix)
             changed_values[k] = nil
             if result then
                 local key = prefix and prefix .. k or tostring(k)
-            if v == nil then
+                if v == nil then
                     result["$unset"][key] = ""
                 else
                     result["$set"][key] = v
@@ -284,7 +290,7 @@ local function _commit_mongo(doc, result, prefix)
                         change = true
                     end
                 end
-            if change then
+                if change then
                     if result["$set"][key] == nil and v._all_dirty then
                         result["$set"][key] = v
                         result._n = result._n + 1
