@@ -71,6 +71,7 @@ local function doc_change_value(doc, k, v)
     end
 end
 
+local _new_doc = nil
 local function doc_change_recursively(doc, k, v)
     local lv = doc._stage[k]
     if getmetatable(lv) ~= tracedoc_type then
@@ -193,7 +194,7 @@ dirtydoc.concat = doc_concat
 dirtydoc.insert = doc_insert
 dirtydoc.remove = doc_remove
 
-local function _new_doc(schema, init)
+_new_doc = function(schema, init)
     local doc_stage = {}
     if dirtydoc.need_schema and schema == nil then
         print("err need_schema.", debug.traceback())
@@ -230,7 +231,11 @@ local function _new_doc(schema, init)
         for k, v in pairs(init) do
             -- deepcopy v
             if getmetatable(v) == tracedoc_type then
-                doc[k] = _new_doc(v)
+                local _schema = nil
+                if schema then
+                    _schema = schema[k]
+                end
+                doc[k] = _new_doc(_schema, v)
             else
                 doc[k] = v
             end

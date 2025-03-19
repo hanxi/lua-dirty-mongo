@@ -26,3 +26,13 @@ local dirty, result = dirtydoc.commit_mongo(obj)
 print("dirty:", dirty, "result:", dump_table(result))
 
 print("obj:", dump_table(obj))
+
+local test = dirtydoc.new()
+test.a = dirtydoc.new(nil, {[31]={1}})
+
+local temp= test.a[31]
+temp[1] = 2
+temp[2] = 2
+
+local dirty,result = dirtydoc.commit_mongo(test)
+print("dirty:", dirty, "result:", dump_table(result))
