@@ -258,6 +258,25 @@ function dirtydoc.check_type(doc)
     return mt == tracedoc_type
 end
 
+local function unset_all_dirty(tab, visited)
+    if not visited then
+        visited = {}
+    end
+
+    if visited[tab] then
+        return
+    end
+
+    visited[tab] = true
+
+    tab._all_dirty = false
+    for k, v in pairs(tab) do
+        if getmetatable(v) == tracedoc_type then
+            unset_all_dirty(v, visited)
+        end
+    end
+end
+
 local function _commit_mongo(doc, result, prefix)
     doc._dirty = false
     local changed_keys = doc._changed_keys
@@ -302,8 +321,7 @@ local function _commit_mongo(doc, result, prefix)
                     end
                     dirty = true
                 end
-
-                v._all_dirty = false
+                unset_all_dirty(v)
             else
                 local change = _commit_mongo(v)
                 dirty = dirty or change
