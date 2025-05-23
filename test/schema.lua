@@ -7,6 +7,7 @@ local boolean = schema_base.boolean
 
 local map_string_string, map_string_string_type = {}, {}
 local map_number_number, map_number_number_type = {}, {}
+local map_number_item, map_number_item_type = {}, {}
 local arr_number, arr_number_type = {}, {}
 local arr_item, arr_item_type = {}, {}
 local item, item_type = {}, {}
@@ -37,6 +38,20 @@ setmetatable(map_number_number, {
     __metatable = map_number_number_type,
     __index = function(t, k)
         return number
+    end,
+})
+
+setmetatable(map_number_item_type, {
+    __tostring = function()
+        return "schema_map_number_item"
+    end,
+})
+map_number_item._check_k = schema_base.check_k_func(number)
+map_number_item._check_kv = schema_base.check_kv_func(number, item)
+setmetatable(map_number_item, {
+    __metatable = map_number_item_type,
+    __index = function(t, k)
+        return item
     end,
 })
 
@@ -93,7 +108,7 @@ user.user_id = number
 user.name = string
 user.item = item
 user.items = arr_item
-user.mitems = map_number_number
+user.mitems = map_number_item
 user._check_k = schema_base.check_k
 user._check_kv = schema_base.check_kv
 setmetatable(user, {
@@ -103,6 +118,7 @@ setmetatable(user, {
 return {
     map_string_string = map_string_string,
     map_number_number = map_number_number,
+    map_number_item = map_number_item,
     arr_number = arr_number,
     arr_item = arr_item,
     item = item,

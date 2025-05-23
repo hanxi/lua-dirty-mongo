@@ -149,8 +149,14 @@ for name, basename, type in pb.types() do
     if name:match(".google.*") == nil then
         if type == "map" then
             local _, _, key_type = pb.field(name, "key")
+            if key_type:sub(1, 1) == "." then
+                key_type = key_type:sub(2)
+            end
             key_type = type2name[key_type] or key_type
-            local _, _, value_type = pb.field(name, "key")
+            local _, _, value_type = pb.field(name, "value")
+            if value_type:sub(1, 1) == "." then
+                value_type = value_type:sub(2)
+            end
             value_type = type2name[value_type] or value_type
             local kv_type = sformat("%s_%s", key_type, value_type)
             map2name[name] = kv_type

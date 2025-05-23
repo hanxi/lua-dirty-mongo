@@ -38,6 +38,8 @@ obj.item = item
 obj.items = dirtydoc.new(schema.arr_item)
 obj.items[1] = item
 obj.item.item_id = 1005 -- 并不会修改 obj.items[1]
+obj.mitems = dirtydoc.new(schema.map_number_item)
+obj.mitems[1] = item
 print("=== 完全覆盖 item")
 local dirty, result = dirtydoc.commit_mongo(obj)
 print("dirty:", dirty, "result:", dump_table(result))
