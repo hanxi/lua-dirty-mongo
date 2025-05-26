@@ -4,6 +4,7 @@ local getmetatable = getmetatable
 local type = type
 local rawset = rawset
 local table = table
+local sformat = string.format
 
 local dirtydoc = {}
 local NULL = setmetatable({}, {
@@ -59,9 +60,7 @@ end
 
 local function doc_change_value(doc, k, v)
     if doc._schema ~= nil and v ~= nil then
-        if not doc._schema:_check_kv(k, v) then
-            print("err doc_change_value. key:", k, ", schema:", getmetatable(doc._schema))
-        end
+        doc._schema:_check_kv(k, v)
     end
     if v ~= doc[k] then
         doc._changed_keys[k] = true -- mark changed (even nil)
@@ -76,13 +75,8 @@ local function doc_change_recursively(doc, k, v)
     local lv = doc._stage[k]
     if getmetatable(lv) ~= tracedoc_type then
         lv = doc._changed_values[k]
-        local schema
-        if doc._schema then
-            schema = doc._schema[k]
-            if not doc._schema:_check_kv(k, v._schema) then
-                print("err doc_change_recursively:", k, "schema:", getmetatable(v._schema))
-            end
-        end
+        local schema = doc._schema[k]
+        doc._schema:_check_kv(k, v._schema)
         if getmetatable(lv) ~= tracedoc_type then
             -- last version is not a table, new a empty one
             lv = _new_doc(schema, nil)
@@ -128,7 +122,7 @@ end
 
 local function doc_change(doc, k, v)
     if doc._const then
-        print("err const can't change. k:", k, ", v:", v, debug.traceback())
+        error(sformat("const can't change. k:%s, v:%s", k, v))
     end
 
     local recursively = false
@@ -137,9 +131,7 @@ local function doc_change(doc, k, v)
         recursively = vt == nil or vt == tracedoc_type
 
         if doc._schema and v ~= nil then
-            if not doc._schema:_check_kv(k, v._schema) then
-                print("err doc_change:", k, "schema:", getmetatable(v._schema))
-            end
+            doc._schema:_check_kv(k, v._schema)
         end
 
         if doc._schema and vt ~= nil then
@@ -196,19 +188,17 @@ dirtydoc.remove = doc_remove
 
 _new_doc = function(schema, init)
     local doc_stage = {}
-    if dirtydoc.need_schema and schema == nil then
-        print("err need_schema.", debug.traceback())
+    if schema == nil then
+        error("need_schema")
     end
-    if schema then
-        setmetatable(doc_stage, {
-            __index = function(t, k)
-                if not schema:_check_k(k) then
-                    print("err __index. key:", k)
-                end
-                return rawget(t, k)
-            end,
-        })
-    end
+
+    setmetatable(doc_stage, {
+        __index = function(t, k)
+            schema:_check_k(k)
+            return rawget(t, k)
+        end,
+    })
+
     local doc = {
         _dirty = false,
         _all_dirty = false,
@@ -232,9 +222,7 @@ _new_doc = function(schema, init)
             -- deepcopy v
             if getmetatable(v) == tracedoc_type then
                 local _schema = nil
-                if schema then
-                    _schema = schema[k]
-                end
+                _schema = schema[k]
                 doc[k] = _new_doc(_schema, v)
             else
                 doc[k] = v

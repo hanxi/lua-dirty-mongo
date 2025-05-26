@@ -72,6 +72,7 @@ local head = sformat(
 
 local schema_base = require("schema_base")
 local number = schema_base.number
+local integer = schema_base.integer
 local string = schema_base.string
 local boolean = schema_base.boolean
 
@@ -117,8 +118,8 @@ setmetatable(arr_${value_type}_type, {
         return "schema_arr_${value_type}"
     end,
 })
-arr_${value_type}._check_k = schema_base.check_k_func(number)
-arr_${value_type}._check_kv = schema_base.check_kv_func(number, ${value_type})
+arr_${value_type}._check_k = schema_base.check_k_func(integer)
+arr_${value_type}._check_kv = schema_base.check_kv_func(integer, ${value_type})
 setmetatable(arr_${value_type}, {
     __metatable = arr_${value_type}_type,
     __index = function(t, k)
@@ -133,10 +134,10 @@ tinsert(returns, "return {")
 local bodys = {}
 
 local type2name = {
-    int32 = "number",
-    uint32 = "number",
-    int64 = "number",
-    uint64 = "number",
+    int32 = "integer",
+    uint32 = "integer",
+    int64 = "integer",
+    uint64 = "integer",
     double = "number",
     float = "number",
     bool = "boolean",

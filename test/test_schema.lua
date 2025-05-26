@@ -4,10 +4,6 @@ local dump_table = require("dump_table")
 local dirtydoc = require("dirtydoc")
 local schema = require("schema")
 
--- 如果 debug 环境有做覆盖率测试的话
--- release 环境可以把 schema 设置为空表
-dirtydoc.need_schema = true
-
 -- 本文件模拟 mongodb 从数据库加载数据和保存数据
 -- obj 对应数据库中的 user 字段
 local obj = dirtydoc.new(schema.user)

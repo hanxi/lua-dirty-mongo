@@ -4,10 +4,6 @@ local dump_table = require("dump_table")
 local dirtydoc = require("dirtydoc")
 local schema = require("schema")
 
--- 如果 debug 环境有做覆盖率测试的话
--- release 环境可以把 schema 设置为空表
-dirtydoc.need_schema = true
-
 -- 本文件模拟 mongodb 从数据库加载数据和保存数据
 -- obj 对应数据库中的 user 字段
 local obj = dirtydoc.new(schema.user)
@@ -38,8 +34,12 @@ obj.item = item
 obj.items = dirtydoc.new(schema.arr_item)
 obj.items[1] = item
 obj.item.item_id = 1005 -- 并不会修改 obj.items[1]
-obj.mitems = dirtydoc.new(schema.map_number_item)
+obj.mitems = dirtydoc.new(schema.map_integer_item)
 obj.mitems[1] = item
+local item = dirtydoc.new(schema.item, {item_id = 1006})
+obj.mitems[2] = item
+
+print(ok, msg)
 print("=== 完全覆盖 item")
 local dirty, result = dirtydoc.commit_mongo(obj)
 print("dirty:", dirty, "result:", dump_table(result))

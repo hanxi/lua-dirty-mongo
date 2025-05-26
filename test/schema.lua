@@ -2,13 +2,14 @@
 
 local schema_base = require("schema_base")
 local number = schema_base.number
+local integer = schema_base.integer
 local string = schema_base.string
 local boolean = schema_base.boolean
 
 local map_string_string, map_string_string_type = {}, {}
-local map_number_number, map_number_number_type = {}, {}
-local map_number_item, map_number_item_type = {}, {}
-local arr_number, arr_number_type = {}, {}
+local map_integer_integer, map_integer_integer_type = {}, {}
+local map_integer_item, map_integer_item_type = {}, {}
+local arr_integer, arr_integer_type = {}, {}
 local arr_item, arr_item_type = {}, {}
 local item, item_type = {}, {}
 local user, user_type = {}, {}
@@ -27,45 +28,45 @@ setmetatable(map_string_string, {
     end,
 })
 
-setmetatable(map_number_number_type, {
+setmetatable(map_integer_integer_type, {
     __tostring = function()
-        return "schema_map_number_number"
+        return "schema_map_integer_integer"
     end,
 })
-map_number_number._check_k = schema_base.check_k_func(number)
-map_number_number._check_kv = schema_base.check_kv_func(number, number)
-setmetatable(map_number_number, {
-    __metatable = map_number_number_type,
+map_integer_integer._check_k = schema_base.check_k_func(integer)
+map_integer_integer._check_kv = schema_base.check_kv_func(integer, integer)
+setmetatable(map_integer_integer, {
+    __metatable = map_integer_integer_type,
     __index = function(t, k)
-        return number
+        return integer
     end,
 })
 
-setmetatable(map_number_item_type, {
+setmetatable(map_integer_item_type, {
     __tostring = function()
-        return "schema_map_number_item"
+        return "schema_map_integer_item"
     end,
 })
-map_number_item._check_k = schema_base.check_k_func(number)
-map_number_item._check_kv = schema_base.check_kv_func(number, item)
-setmetatable(map_number_item, {
-    __metatable = map_number_item_type,
+map_integer_item._check_k = schema_base.check_k_func(integer)
+map_integer_item._check_kv = schema_base.check_kv_func(integer, item)
+setmetatable(map_integer_item, {
+    __metatable = map_integer_item_type,
     __index = function(t, k)
         return item
     end,
 })
 
-setmetatable(arr_number_type, {
+setmetatable(arr_integer_type, {
     __tostring = function()
-        return "schema_arr_number"
+        return "schema_arr_integer"
     end,
 })
-arr_number._check_k = schema_base.check_k_func(number)
-arr_number._check_kv = schema_base.check_kv_func(number, number)
-setmetatable(arr_number, {
-    __metatable = arr_number_type,
+arr_integer._check_k = schema_base.check_k_func(integer)
+arr_integer._check_kv = schema_base.check_kv_func(integer, integer)
+setmetatable(arr_integer, {
+    __metatable = arr_integer_type,
     __index = function(t, k)
-        return number
+        return integer
     end,
 })
 
@@ -74,8 +75,8 @@ setmetatable(arr_item_type, {
         return "schema_arr_item"
     end,
 })
-arr_item._check_k = schema_base.check_k_func(number)
-arr_item._check_kv = schema_base.check_kv_func(number, item)
+arr_item._check_k = schema_base.check_k_func(integer)
+arr_item._check_kv = schema_base.check_kv_func(integer, item)
 setmetatable(arr_item, {
     __metatable = arr_item_type,
     __index = function(t, k)
@@ -88,9 +89,9 @@ setmetatable(item_type, {
         return "schema_item"
     end,
 })
-item.item_id = number
-item.props = map_number_number
-item.list = arr_number
+item.item_id = integer
+item.props = map_integer_integer
+item.list = arr_integer
 item.ss = map_string_string
 item.can = boolean
 item._check_k = schema_base.check_k
@@ -104,11 +105,11 @@ setmetatable(user_type, {
         return "schema_user"
     end,
 })
-user.user_id = number
+user.user_id = integer
 user.name = string
 user.item = item
 user.items = arr_item
-user.mitems = map_number_item
+user.mitems = map_integer_item
 user._check_k = schema_base.check_k
 user._check_kv = schema_base.check_kv
 setmetatable(user, {
@@ -117,9 +118,9 @@ setmetatable(user, {
 
 return {
     map_string_string = map_string_string,
-    map_number_number = map_number_number,
-    map_number_item = map_number_item,
-    arr_number = arr_number,
+    map_integer_integer = map_integer_integer,
+    map_integer_item = map_integer_item,
+    arr_integer = arr_integer,
     arr_item = arr_item,
     item = item,
     user = user,
