@@ -17,6 +17,27 @@ obj.items[1] = item
 local dirty, result = dirtydoc.commit_mongo(obj)
 print("dirty:", dirty, "result:", dump_table(result))
 
+obj.items[1].item_id = 101
+obj.items[1] = nil
+local dirty, result = dirtydoc.commit_mongo(obj)
+print("dirty:", dirty, "result:", dump_table(result))
+
+
+obj.items[1] = item
+obj.items[2] = item
+obj.items[3] = item
+obj.items[4] = item
+local dirty, result = dirtydoc.commit_mongo(obj)
+print("dirty:", dirty, "result:", dump_table(result))
+
+
+for i=1,3 do
+    obj.items[i] = nil
+end
+local dirty, result = dirtydoc.commit_mongo(obj)
+print("dirty:", dirty, "result:", dump_table(result))
+
+
 -- 定义一个 item 并对其初始化
 local item = dirtydoc.new(schema.item)
 item.item_id = 200
