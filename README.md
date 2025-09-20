@@ -1,6 +1,8 @@
 # lua-dirty-mongo
 适配 MongoDB 的差异脏数据
 
+全新版本见 : <https://github.com/hanxi/sproto-orm>
+
 ## 定义 schema 结构
 
 采用 proto3 语法定义，支持 map 和 array 结构，基础数据类型支持 number, bool, string 三种，其中 `int32,uint32,int64,uint64,double,float` 都是生成一样的 number 类型。比如可以这样定义：
